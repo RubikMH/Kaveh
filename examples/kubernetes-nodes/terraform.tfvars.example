@@ -1,0 +1,8 @@
+vsphere_server = "vcenter.example.com"
+vsphere_user   = "administrator@vsphere.local"
+
+datacenter    = "Datacenter1"
+datastore     = "datastore1"
+cluster       = "Cluster1"
+network       = "VM Network"
+template_name = "ubuntu-22.04-template"

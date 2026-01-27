@@ -1,0 +1,45 @@
+# vSphere Connection Configuration
+vsphere_server       = "vcenter.example.com"
+vsphere_user         = "administrator@vsphere.local"
+# vsphere_password   = "SecurePassword123!"  # Use environment variable instead: TF_VAR_vsphere_password
+allow_unverified_ssl = true  # Set to false in production with proper SSL certificates
+
+# vSphere Infrastructure
+datacenter    = "Datacenter1"
+datastore     = "datastore1"
+cluster       = "Cluster1"
+network       = "VM Network"
+resource_pool = ""  # Leave empty to use cluster default
+
+# VM Template
+template_name = "ubuntu-22.04-template"
+
+# VM Configuration
+vm_name                  = "kaveh-vm-01"
+vm_folder                = "terraform-vms"
+vm_num_cpus              = 2
+vm_memory                = 4096  # MB
+vm_disk_size             = 40    # GB
+vm_disk_thin_provisioned = true
+
+# Network Configuration
+vm_ipv4_address = "192.168.1.100"  # Leave empty for DHCP
+vm_ipv4_netmask = 24
+vm_ipv4_gateway = "192.168.1.1"
+vm_dns_servers  = ["192.168.1.1", "8.8.8.8"]
+vm_domain       = "rubikmh.io"
+
+# Cloud-Init (set to true to use cloud-init instead of traditional customization)
+use_cloud_init           = false
+cloud_init_metadata_file = "cloud-init/metadata.yaml"
+cloud_init_userdata_file = "cloud-init/userdata.yaml"
+
+# Annotations
+vm_annotation = "Created by Kaveh Terraform - DevOps Infrastructure"
+
+# Tags (if using vSphere tags)
+vm_tags = {
+  Environment = "Development"
+  ManagedBy   = "Terraform"
+  Project     = "Kaveh"
+}

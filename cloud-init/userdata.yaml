@@ -1,0 +1,64 @@
+#cloud-config
+
+# Hostname Configuration
+hostname: kaveh-vm
+fqdn: kaveh-vm.rubikmh.io
+manage_etc_hosts: true
+
+# User Configuration
+users:
+  - name: sysadmin
+    groups: sudo, docker
+    shell: /bin/bash
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC... # Replace with your public key
+
+# Timezone and Locale
+timezone: Asia/Tehran
+locale: en_US.UTF-8
+
+# Package Management
+package_update: true
+package_upgrade: true
+packages:
+  - curl
+  - wget
+  - git
+  - vim
+  - htop
+  - net-tools
+  - docker.io
+  - docker-compose
+  - kubectl
+  - jq
+
+# Docker Configuration
+runcmd:
+  - systemctl enable docker
+  - systemctl start docker
+  - usermod -aG docker sysadmin
+  - echo "Cloud-init completed successfully" > /var/log/cloud-init-complete.log
+
+# Write Additional Files
+write_files:
+  - path: /etc/motd
+    content: |
+      ╔═══════════════════════════════════════╗
+      ║                                       ║
+      ║     Welcome to Kaveh Infrastructure   ║
+      ║     Managed by Terraform              ║
+      ║                                       ║
+      ╚═══════════════════════════════════════╝
+    permissions: '0644'
+
+# SSH Configuration
+ssh_pwauth: false
+disable_root: true
+
+# Final Message
+final_message: |
+  Kaveh VM provisioning completed!
+  System has been configured and is ready for use.
+  Time: $TIMESTAMP
+  Uptime: $UPTIME

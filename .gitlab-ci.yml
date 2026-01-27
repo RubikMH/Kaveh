@@ -1,0 +1,81 @@
+image:
+  name: hashicorp/terraform:latest
+  entrypoint:
+    - '/usr/bin/env'
+    - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+
+variables:
+  TF_ROOT: ${CI_PROJECT_DIR}
+  TF_ADDRESS: ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/terraform/state/${CI_COMMIT_REF_SLUG}
+  TF_VAR_vsphere_server: ${VSPHERE_SERVER}
+  TF_VAR_vsphere_user: ${VSPHERE_USER}
+  TF_VAR_vsphere_password: ${VSPHERE_PASSWORD}
+
+cache:
+  paths:
+    - ${TF_ROOT}/.terraform
+
+stages:
+  - validate
+  - plan
+  - apply
+  - destroy
+
+before_script:
+  - cd ${TF_ROOT}
+  - terraform --version
+  - terraform init -backend-config="address=${TF_ADDRESS}" -backend-config="lock_address=${TF_ADDRESS}/lock" -backend-config="unlock_address=${TF_ADDRESS}/lock" -backend-config="username=${GITLAB_USER_LOGIN}" -backend-config="password=${CI_JOB_TOKEN}" -backend-config="lock_method=POST" -backend-config="unlock_method=DELETE" -backend-config="retry_wait_min=5"
+
+# Validate Terraform Configuration
+validate:
+  stage: validate
+  script:
+    - terraform fmt -check -recursive
+    - terraform validate
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+
+# Plan Infrastructure Changes
+plan:
+  stage: plan
+  script:
+    - terraform plan -out=plan.tfplan
+    - terraform show -json plan.tfplan > plan.json
+  artifacts:
+    name: plan
+    paths:
+      - ${TF_ROOT}/plan.tfplan
+      - ${TF_ROOT}/plan.json
+    reports:
+      terraform: ${TF_ROOT}/plan.json
+    expire_in: 7 days
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+
+# Apply Infrastructure Changes
+apply:
+  stage: apply
+  script:
+    - terraform apply -auto-approve plan.tfplan
+  dependencies:
+    - plan
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      when: manual
+  environment:
+    name: production
+    on_stop: destroy
+
+# Destroy Infrastructure
+destroy:
+  stage: destroy
+  script:
+    - terraform destroy -auto-approve
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      when: manual
+  environment:
+    name: production
+    action: stop
