@@ -55,15 +55,13 @@ resource "vsphere_virtual_machine" "vm" {
   }
 
   # Cloud-Init Configuration (if enabled)
-  dynamic "extra_config" {
-    for_each = var.use_cloud_init ? [1] : []
-    content {
-      "guestinfo.metadata"          = base64encode(file(var.cloud_init_metadata_file))
-      "guestinfo.metadata.encoding" = "base64"
-      "guestinfo.userdata"          = base64encode(file(var.cloud_init_userdata_file))
-      "guestinfo.userdata.encoding" = "base64"
-    }
-  }
+  # extra_config is a map attribute, not a block - use conditional merge
+  extra_config = var.use_cloud_init ? {
+    "guestinfo.metadata"          = base64encode(file(var.cloud_init_metadata_file))
+    "guestinfo.metadata.encoding" = "base64"
+    "guestinfo.userdata"          = base64encode(file(var.cloud_init_userdata_file))
+    "guestinfo.userdata.encoding" = "base64"
+  } : {}
 
   # Annotations
   annotation = var.vm_annotation

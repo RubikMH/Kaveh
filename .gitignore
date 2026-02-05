@@ -34,6 +34,7 @@ terraform.rc
 
 # Ignore any .env files
 .env
+.github
 .env.*
 
 # Ignore SSH keys

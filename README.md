@@ -26,6 +26,9 @@ Kaveh is a comprehensive Terraform configuration for automating VMware vSphere v
 - 📦 **Cloud-Init Support**: Modern initialization for Linux VMs
 - 🔐 **Secure**: Sensitive data handling with Terraform best practices
 - 🎯 **GitOps Ready**: Designed for CI/CD integration
+- ✅ **Input Validation**: Comprehensive variable validation to prevent misconfigurations
+- 🧹 **Linting**: TFLint configuration for Terraform best practices
+- 🛠️ **Makefile**: Simplified commands for common operations
 
 ---
 
@@ -74,6 +77,42 @@ terraform plan
 terraform apply
 ```
 
+Or use the **Makefile** for simplified operations:
+```bash
+make init      # Initialize Terraform
+make plan      # Generate execution plan
+make apply     # Apply the saved plan
+```
+
+---
+
+## 🛠️ Makefile Commands
+
+The project includes a Makefile for common operations:
+
+| Command | Description |
+|---------|-------------|
+| `make help` | Show all available commands |
+| `make init` | Initialize Terraform working directory |
+| `make validate` | Validate Terraform configuration |
+| `make format` | Format Terraform files to canonical format |
+| `make format-check` | Check if files are properly formatted |
+| `make plan` | Generate and save execution plan |
+| `make plan-destroy` | Generate destruction plan |
+| `make apply` | Apply the saved plan |
+| `make apply-auto` | Apply without confirmation ⚠️ |
+| `make destroy` | Destroy infrastructure (requires confirmation) |
+| `make destroy-auto` | Destroy without confirmation ⚠️ |
+| `make clean` | Clean up Terraform files |
+| `make console` | Open Terraform console |
+| `make output` | Show Terraform outputs |
+| `make lint` | Run TFLint |
+| `make docs` | Generate documentation with terraform-docs |
+| `make test` | Run all checks (validate, format, lint) |
+| `make check-tools` | Verify required tools are installed |
+| `make upgrade` | Upgrade provider versions |
+| `make graph` | Generate dependency graph |
+
 ---
 
 ## 📁 Project Structure
@@ -81,10 +120,13 @@ terraform apply
 ```
 kaveh/
 ├── provider.tf          # Terraform and provider configuration
-├── variables.tf         # Variable definitions
+├── variables.tf         # Variable definitions with validation
 ├── data.tf             # Data sources for vSphere objects
 ├── main.tf             # VM resource definitions
 ├── outputs.tf          # Output values
+├── locals.tf           # Computed values and data transformations
+├── Makefile            # Common operations shortcuts
+├── .tflint.hcl         # TFLint configuration
 ├── terraform.tfvars.example  # Example configuration
 ├── modules/            # Reusable Terraform modules
 │   ├── vm-single/     # Single VM module
@@ -101,6 +143,26 @@ kaveh/
 ---
 
 ## ⚙️ Configuration
+
+### Variable Validation
+
+Kaveh includes comprehensive input validation to prevent misconfigurations:
+
+| Variable | Validation Rules |
+|----------|------------------|
+| `vsphere_user` | Cannot be empty |
+| `vsphere_password` | Minimum 8 characters |
+| `vsphere_server` | Valid FQDN or IP address format |
+| `datacenter`, `datastore`, `cluster`, `network` | Cannot be empty |
+| `vm_name` | Alphanumeric + hyphens, starts with letter, max 63 chars |
+| `vm_num_cpus` | Between 1 and 128 |
+| `vm_memory` | Between 512 MB and 6 TB, multiple of 4 |
+| `vm_disk_size` | Between 1 GB and 62 TB |
+| `vm_ipv4_address` | Valid IPv4 format or empty (for DHCP) |
+| `vm_ipv4_netmask` | Between 1 and 32 bits |
+| `vm_ipv4_gateway` | Valid IPv4 format or empty |
+| `vm_dns_servers` | At least one DNS server required |
+| `vm_domain` | Valid domain name format |
 
 ### Basic Configuration
 
@@ -248,6 +310,42 @@ runcmd:
 ---
 
 ## 🔧 Advanced Features
+
+### Local Values
+
+The `locals.tf` file provides computed values for better code organization:
+
+```hcl
+# Available local values
+local.vm_name_sanitized    # Sanitized VM name (lowercase, no special chars)
+local.vm_fqdn              # Full hostname with domain
+local.resource_pool_id     # Computed resource pool ID
+local.use_static_ip        # Boolean: true if static IP configured
+local.network_config       # Network configuration map
+local.effective_disk_size  # Disk size (at least as large as template)
+local.cloud_init_config    # Pre-built cloud-init config map
+local.vm_annotation        # Final annotation with fallback to default
+local.common_tags          # Standard tags (managed_by, project, environment)
+local.all_tags             # Merged common + user-provided tags
+```
+
+### TFLint Integration
+
+Run TFLint to catch issues early:
+
+```bash
+make lint
+# or
+tflint --init && tflint --recursive
+```
+
+The `.tflint.hcl` configuration enforces:
+- Terraform naming conventions (snake_case)
+- Required descriptions for variables and outputs
+- Deprecated syntax detection
+- Unused declarations warnings
+- Module source pinning
+- Standard module structure
 
 ### Remote State Storage (MinIO/S3)
 
@@ -430,6 +528,8 @@ terraform apply
 - [VMware vSphere API Reference](https://developer.vmware.com/apis/vsphere-automation/latest/)
 - [Cloud-Init Documentation](https://cloudinit.readthedocs.io/)
 - [Terraform Best Practices](https://www.terraform-best-practices.com/)
+- [TFLint Documentation](https://github.com/terraform-linters/tflint)
+- [terraform-docs](https://terraform-docs.io/)
 
 ---
 
@@ -439,9 +539,23 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+3. Run tests before committing (`make test`)
+4. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+5. Push to the branch (`git push origin feature/AmazingFeature`)
+6. Open a Pull Request
+
+### Development Setup
+
+```bash
+# Check required tools
+make check-tools
+
+# Install recommended tools (macOS)
+brew install terraform tflint terraform-docs
+
+# Run all checks before committing
+make test
+```
 
 ---
 
