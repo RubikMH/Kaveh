@@ -38,7 +38,7 @@ terraform.rc
 
 # Remove .github exclusion - we want to include .github/workflows for GitHub Actions
 # But exclude instructions directory (internal project context)
-.github/instructions/
+.github
 
 # Ignore SSH keys
 *.pem
