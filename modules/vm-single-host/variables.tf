@@ -8,15 +8,9 @@ variable "datastore" {
   type        = string
 }
 
-variable "cluster" {
-  description = "Cluster name"
+variable "host" {
+  description = "Host name"
   type        = string
-}
-
-variable "host_name" {
-  description = "Specific ESXi host name to deploy VM to (optional - bypasses HA/DRS)"
-  type        = string
-  default     = null
 }
 
 variable "network" {
@@ -65,9 +59,8 @@ variable "thin_provisioned" {
 }
 
 variable "ipv4_address" {
-  description = "IPv4 address (optional - if not provided, no customization will be applied)"
+  description = "IPv4 address"
   type        = string
-  default     = null
 }
 
 variable "ipv4_netmask" {
@@ -79,7 +72,6 @@ variable "ipv4_netmask" {
 variable "ipv4_gateway" {
   description = "IPv4 gateway"
   type        = string
-  default     = null
 }
 
 variable "dns_servers" {
@@ -116,28 +108,4 @@ variable "cloud_init_userdata" {
   description = "Cloud-init userdata (base64 encoded)"
   type        = string
   default     = ""
-}
-
-variable "hardware_version" {
-  description = "VM hardware version (numeric: 15=ESXi 6.7+, 17=ESXi 7.0+, 19=ESXi 7.0U2+, 20=ESXi 8.0+). If null, uses template hardware version"
-  type        = number
-  default     = null
-}
-
-variable "firmware" {
-  description = "VM firmware type (bios or efi). If null, uses template firmware"
-  type        = string
-  default     = null
-}
-
-variable "wait_for_guest_net_timeout" {
-  description = "Timeout for waiting for guest network (seconds)"
-  type        = number
-  default     = 5
-}
-
-variable "wait_for_guest_ip_timeout" {
-  description = "Timeout for waiting for guest IP address (seconds)"
-  type        = number
-  default     = 5
 }

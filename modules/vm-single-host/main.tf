@@ -17,15 +17,8 @@ data "vsphere_datastore" "datastore" {
   datacenter_id = data.vsphere_datacenter.dc.id
 }
 
-data "vsphere_compute_cluster" "cluster" {
-  name          = var.cluster
-  datacenter_id = data.vsphere_datacenter.dc.id
-}
-
-# Optional specific host data source (bypasses HA/DRS)
 data "vsphere_host" "host" {
-  count         = var.host_name != null ? 1 : 0
-  name          = var.host_name
+  name          = var.host
   datacenter_id = data.vsphere_datacenter.dc.id
 }
 
@@ -42,7 +35,7 @@ data "vsphere_virtual_machine" "template" {
 # Virtual Machine
 resource "vsphere_virtual_machine" "vm" {
   name             = var.vm_name
-  resource_pool_id = var.host_name != null ? data.vsphere_host.host[0].resource_pool_id : data.vsphere_compute_cluster.cluster.resource_pool_id
+  resource_pool_id = data.vsphere_host.host.resource_pool_id
   datastore_id     = data.vsphere_datastore.datastore.id
   folder           = var.vm_folder
 
@@ -50,30 +43,7 @@ resource "vsphere_virtual_machine" "vm" {
   memory   = var.memory
   guest_id = data.vsphere_virtual_machine.template.guest_id
 
-  # Hardware compatibility settings
-  hardware_version     = var.hardware_version != null ? var.hardware_version : data.vsphere_virtual_machine.template.hardware_version
-  firmware             = var.firmware != null ? var.firmware : data.vsphere_virtual_machine.template.firmware
-  scsi_type           = data.vsphere_virtual_machine.template.scsi_type
-  
-  # CPU compatibility settings for Intel Xeon processors
-  cpu_hot_add_enabled    = false
-  cpu_hot_remove_enabled = false
-  memory_hot_add_enabled = false
-  
-  # Force older CPU features for maximum compatibility
-  cpu_performance_counters_enabled = false
-  nested_hv_enabled                = false
-  ept_rvi_mode                     = "automatic"
-  hv_mode                          = "hvAuto"
-  
-  # Disable newer features that might cause compatibility issues
-  enable_disk_uuid                 = false
-  sync_time_with_host_periodically = false
-  
-  # Ensure VM waits for network and tools
-  wait_for_guest_net_timeout = 0  # Disable network waiting
-  wait_for_guest_ip_timeout  = 0  # Disable IP waiting
-  wait_for_guest_net_routable = false  # Don't wait for routable network
+  scsi_type = data.vsphere_virtual_machine.template.scsi_type
 
   network_interface {
     network_id   = data.vsphere_network.network.id
@@ -98,8 +68,7 @@ resource "vsphere_virtual_machine" "vm" {
     template_uuid = data.vsphere_virtual_machine.template.id
 
     dynamic "customize" {
-      # Only customize if cloud-init is disabled AND network settings are provided
-      for_each = (!var.use_cloud_init && var.ipv4_address != null && var.ipv4_address != "") ? [1] : []
+      for_each = var.use_cloud_init ? [] : [1]
       content {
         linux_options {
           host_name = var.vm_name

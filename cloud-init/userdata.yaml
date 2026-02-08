@@ -2,7 +2,7 @@
 
 # Hostname Configuration
 hostname: kaveh-vm
-fqdn: kaveh-vm.rubikmh.io
+fqdn: kaveh-vm.local.test
 manage_etc_hosts: true
 
 # User Configuration
@@ -11,9 +11,8 @@ users:
     groups: sudo, docker
     shell: /bin/bash
     sudo: ['ALL=(ALL) NOPASSWD:ALL']
-    ssh_authorized_keys:
-      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC... # Replace with your public key
 
+    
 # Timezone and Locale
 timezone: Asia/Tehran
 locale: en_US.UTF-8
@@ -53,12 +52,18 @@ write_files:
     permissions: '0644'
 
 # SSH Configuration
-ssh_pwauth: false
+ssh_pwauth: true   # Enable SSH password authentication
 disable_root: true
 
 # Final Message
 final_message: |
   Kaveh VM provisioning completed!
   System has been configured and is ready for use.
+  
+  Login credentials:
+    Username: sysadmin
+    Password: kaveh123 
+  
+  SSH: ssh sysadmin@<VM_IP_ADDRESS>
   Time: $TIMESTAMP
   Uptime: $UPTIME

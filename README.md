@@ -129,15 +129,18 @@ kaveh/
 ├── .tflint.hcl         # TFLint configuration
 ├── terraform.tfvars.example  # Example configuration
 ├── modules/            # Reusable Terraform modules
-│   ├── vm-single/     # Single VM module
+│   ├── vm-single/     # Single VM module (supports cluster or host deployment)
+│   ├── vm-single-host/# Single VM module (dedicated host deployment)
 │   └── vm-cluster/    # Multiple VM cluster module
 ├── cloud-init/        # Cloud-init configuration files
-│   ├── metadata.yaml
-│   └── userdata.yaml
+│   ├── metadata.yaml  # Cloud-init metadata configuration
+│   └── userdata.yaml  # Cloud-init user data with packages and settings
 └── examples/          # Usage examples
-    ├── basic/
-    ├── kubernetes-nodes/
-    └── windows-vm/
+    ├── basic-cluster/ # Simple VM deployment using cluster
+    ├── basic-host/    # Simple VM deployment using specific host
+    ├── kubernetes-nodes/ # Kubernetes cluster deployment example
+    ├── windows-vm-cluster/ # Windows Server VM on cluster
+    └── windows-vm-host/    # Windows Server VM on specific host
 ```
 
 ---
@@ -208,7 +211,56 @@ resource "vsphere_virtual_machine" "vm" {
 
 ---
 
-## 📖 Usage Examples
+## 📖 Usage Examples 
+
+Kaveh provides several practical examples to help you get started:
+
+### Example Overview
+
+| Example | Description | Use Case |
+|---------|-------------|----------|
+| **[basic-cluster/](examples/basic-cluster/)** | Simple VM deployment using cluster resource pool | General-purpose VM with HA/DRS support |
+| **[basic-host/](examples/basic-host/)** | Simple VM deployment targeting specific ESXi host | Direct host deployment, bypasses HA/DRS |
+| **[kubernetes-nodes/](examples/kubernetes-nodes/)** | Multiple VM setup for Kubernetes cluster | Container orchestration infrastructure |
+| **[windows-vm-cluster/](examples/windows-vm-cluster/)** | Windows Server VM on cluster | Windows workloads with cluster benefits |
+| **[windows-vm-host/](examples/windows-vm-host/)** | Windows Server VM on specific host | Windows workloads on dedicated host |
+
+### Basic Cluster Deployment
+
+```bash
+cd examples/basic-cluster
+cp terraform.tfvars.example terraform.tfvars
+# Edit terraform.tfvars with your environment details
+terraform init
+terraform plan
+terraform apply
+```
+
+### Cloud-Init Integration
+
+All Linux examples support cloud-init for automated configuration:
+
+```yaml
+# cloud-init/userdata.yaml
+#cloud-config
+hostname: kaveh-vm
+users:
+  - name: sysadmin
+    groups: sudo, docker
+    shell: /bin/bash
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+
+packages:
+  - docker.io
+  - kubectl
+  - git
+  - vim
+
+runcmd:
+  - systemctl enable docker
+  - systemctl start docker
+  - usermod -aG docker sysadmin
+```
 
 ### Single VM Deployment
 
@@ -306,6 +358,25 @@ runcmd:
   - systemctl start docker
   - echo "VM provisioned successfully" > /var/log/cloud-init-complete
 ```
+
+### Module Structure
+
+Kaveh offers modular architecture with three main modules:
+
+#### vm-single Module
+- **Purpose**: Deploy a single VM with flexible placement options
+- **Features**: Supports both cluster and specific host deployment
+- **Cloud-Init**: Optional cloud-init support for automated configuration
+- **Customization**: Conditional network customization based on deployment type
+
+#### vm-single-host Module  
+- **Purpose**: Deploy a VM directly to a specific ESXi host
+- **Use Case**: Bypasses HA/DRS for direct host control
+- **Features**: Dedicated host resource pool, cloud-init support
+
+#### vm-cluster Module
+- **Purpose**: Deploy multiple VMs as a coordinated cluster
+- **Features**: Bulk deployment, consistent configuration, naming schemes
 
 ---
 
@@ -419,35 +490,46 @@ module "web_servers" {
 
 ## 🎯 CI/CD Integration
 
-### GitLab CI Example
+### GitHub Actions Example
 
 ```yaml
-# .gitlab-ci.yml
-stages:
-  - validate
-  - plan
-  - apply
+# .github/workflows/terraform.yml
+name: 'Terraform Infrastructure'
 
-variables:
-  TF_ROOT: ${CI_PROJECT_DIR}
-  TF_STATE_NAME: ${CI_COMMIT_REF_SLUG}
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
-before_script:
-  - cd ${TF_ROOT}
-  - terraform init
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    env:
+      TF_VAR_vsphere_server: ${{ secrets.VSPHERE_SERVER }}
+      TF_VAR_vsphere_user: ${{ secrets.VSPHERE_USER }}
+      TF_VAR_vsphere_password: ${{ secrets.VSPHERE_PASSWORD }}
 
-validate:
-  stage: validate
-  script:
-    - terraform fmt -check
-    - terraform validate
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
 
-plan:
-  stage: plan
-  script:
-    - terraform plan -out=plan.tfplan
-  artifacts:
-    paths:
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ~1.0
+
+    - name: Terraform Init
+      run: terraform init
+
+    - name: Terraform Format Check
+      run: terraform fmt -check
+
+    - name: Terraform Validate
+      run: terraform validate
+
+    - name: Terraform Plan
+      run: terraform plan
       - ${TF_ROOT}/plan.tfplan
 
 apply:

@@ -1,0 +1,9 @@
+vsphere_server = "vcenter.example.com"
+vsphere_user   = "administrator@vsphere.local"
+# vsphere_password = "password"  # Use TF_VAR_vsphere_password
+
+datacenter    = "Datacenter1"
+datastore     = "datastore1"
+host          = "esxi-01.example.com"
+network       = "VM Network"
+template_name = "ubuntu-22.04-template"

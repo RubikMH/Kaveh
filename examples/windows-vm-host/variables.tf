@@ -20,7 +20,7 @@ variable "datastore" {
   type = string
 }
 
-variable "cluster" {
+variable "host" {
   type = string
 }
 
@@ -30,4 +30,9 @@ variable "network" {
 
 variable "template_name" {
   type = string
+}
+
+variable "windows_admin_password" {
+  type      = string
+  sensitive = true
 }
