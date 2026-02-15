@@ -5,5 +5,46 @@ vsphere_user   = "administrator@vsphere.local"
 datacenter    = "Datacenter1"
 datastore     = "datastore1"
 cluster       = "Cluster1"
-network       = "VM Network"
 template_name = "ubuntu-22.04-template"
+
+# Example 1: Multiple networks with DHCP
+networks = [
+  {
+    name         = "VM Network"        # Management network
+    ipv4_address = null               # Use DHCP
+    ipv4_netmask = 24
+  },
+  {
+    name         = "VM Network 2"      # Data network
+    ipv4_address = null               # Use DHCP
+    ipv4_netmask = 24
+  }
+]
+
+# Example 2: Multiple networks with static IPs (uncomment to use)
+# networks = [
+#   {
+#     name         = "VM Network"        # Management network
+#     ipv4_address = "192.168.1.100"    # Static IP for first interface
+#     ipv4_netmask = 24
+#   },
+#   {
+#     name         = "Storage Network"   # Storage network
+#     ipv4_address = "10.0.1.100"       # Static IP for second interface  
+#     ipv4_netmask = 24
+#   }
+# ]
+
+# Example 3: Mixed configuration (DHCP + Static)
+# networks = [
+#   {
+#     name         = "VM Network"        # Management network with DHCP
+#     ipv4_address = null               
+#     ipv4_netmask = 24
+#   },
+#   {
+#     name         = "DMZ Network"       # DMZ network with static IP
+#     ipv4_address = "172.16.1.100"     
+#     ipv4_netmask = 24
+#   }
+# ]

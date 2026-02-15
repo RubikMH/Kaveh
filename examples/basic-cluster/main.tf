@@ -21,7 +21,7 @@ module "basic_vm" {
   datastore     = var.datastore
   cluster       = var.cluster
   host_name     = var.esxi_host_name  # Direct host targeting - bypasses HA/DRS
-  network       = var.network
+  networks      = var.networks        # Use multiple networks
   template_name = var.template_name
 
   vm_name       = "basic-vm-02"
@@ -39,7 +39,7 @@ module "basic_vm" {
   # No network configuration - VM will use DHCP from template settings
   # Removed: ipv4_address, ipv4_gateway, dns_servers, domain
   
-  annotation    = "Basic Debian VM - cloned from template without any customization"
+  annotation    = "Basic Debian VM - cloned from template with multiple network interfaces"
 }
 
 output "vm_ip" {

@@ -14,8 +14,17 @@ variable "cluster" {
 }
 
 variable "network" {
-  description = "Network name"
+  description = "Network name (for backward compatibility - use networks for multiple interfaces)"
   type        = string
+  default     = null
+}
+
+variable "networks" {
+  description = "List of network configurations for multiple network interfaces"
+  type = list(object({
+    name = string
+  }))
+  default = []
 }
 
 variable "template_name" {

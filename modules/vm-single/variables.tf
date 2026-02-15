@@ -20,8 +20,19 @@ variable "host_name" {
 }
 
 variable "network" {
-  description = "Network name"
+  description = "Network name (for backward compatibility - use networks for multiple interfaces)"
   type        = string
+  default     = null
+}
+
+variable "networks" {
+  description = "List of network configurations for multiple network interfaces"
+  type = list(object({
+    name         = string
+    ipv4_address = optional(string)
+    ipv4_netmask = optional(number, 24)
+  }))
+  default = []
 }
 
 variable "template_name" {
