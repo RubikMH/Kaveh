@@ -7,7 +7,21 @@ datastore     = "datastore1"
 cluster       = "Cluster1"
 template_name = "ubuntu-22.04-template"
 
-# Example 1: Multiple networks with DHCP
+# ==============================================================================
+# 5-VM CLUSTER CONFIGURATION EXAMPLES
+# ==============================================================================
+
+# Example 1: Basic 5-VM cluster with DHCP (RECOMMENDED)
+vm_count    = 5
+name_prefix = "web-server"    # Creates: web-server-1, web-server-2, web-server-3, web-server-4, web-server-5
+
+# Resource allocation per VM
+num_cpus  = 2      # 2 CPUs per VM (Total: 10 CPUs)
+memory    = 4096   # 4GB RAM per VM (Total: 20GB RAM)
+disk_size = 40     # 40GB disk per VM (Total: 200GB storage)
+
+# Network Configuration - DHCP 
+use_dhcp = true
 networks = [
   {
     name         = "VM Network"        # Management network
@@ -15,36 +29,47 @@ networks = [
     ipv4_netmask = 24
   },
   {
-    name         = "VM Network 2"      # Data network
+    name         = "VM Network 2"      # Data network  
     ipv4_address = null               # Use DHCP
     ipv4_netmask = 24
   }
 ]
 
-# Example 2: Multiple networks with static IPs (uncomment to use)
+# Example 2: 5-VM cluster with static IPs (uncomment to use)
+# vm_count    = 5
+# name_prefix = "database"      # Creates: database-1, database-2, database-3, database-4, database-5
+# num_cpus  = 4                # 4 CPUs per VM (Total: 20 CPUs)  
+# memory    = 8192             # 8GB RAM per VM (Total: 40GB RAM)
+# disk_size = 100              # 100GB disk per VM (Total: 500GB storage)
+# use_dhcp = false
+# ipv4_network_prefix = "192.168.1"
+# ipv4_address_start  = 20     # IPs: 192.168.1.20, 192.168.1.21, 192.168.1.22, 192.168.1.23, 192.168.1.24
+# ipv4_gateway = "192.168.1.1"
+# dns_servers = ["192.168.1.10", "192.168.1.11"]
 # networks = [
 #   {
-#     name         = "VM Network"        # Management network
-#     ipv4_address = "192.168.1.100"    # Static IP for first interface
+#     name         = "Management"
+#     ipv4_address = null          # Will use calculated static IPs
 #     ipv4_netmask = 24
 #   },
 #   {
-#     name         = "Storage Network"   # Storage network
-#     ipv4_address = "10.0.1.100"       # Static IP for second interface  
+#     name         = "Storage"
+#     ipv4_address = null          # Will use calculated static IPs
 #     ipv4_netmask = 24
 #   }
 # ]
 
-# Example 3: Mixed configuration (DHCP + Static)
+# Example 3: Development cluster (uncomment to use)
+# vm_count    = 3              # Smaller dev cluster
+# name_prefix = "dev"          # Creates: dev-1, dev-2, dev-3  
+# num_cpus  = 1               # Lower resources for development
+# memory    = 2048            # 2GB RAM per VM
+# disk_size = 20              # 20GB disk per VM
+# use_dhcp = true
 # networks = [
 #   {
-#     name         = "VM Network"        # Management network with DHCP
-#     ipv4_address = null               
-#     ipv4_netmask = 24
-#   },
-#   {
-#     name         = "DMZ Network"       # DMZ network with static IP
-#     ipv4_address = "172.16.1.100"     
+#     name         = "Dev Network"
+#     ipv4_address = null
 #     ipv4_netmask = 24
 #   }
 # ]

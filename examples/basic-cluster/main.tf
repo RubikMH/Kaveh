@@ -14,34 +14,59 @@ provider "vsphere" {
   allow_unverified_ssl = true
 }
 
-module "basic_vm" {
-  source = "../../modules/vm-single"
+# Deploy cluster of 5 VMs with multiple network interfaces
+module "vm_cluster" {
+  source = "../../modules/vm-cluster"
 
   datacenter    = var.datacenter
   datastore     = var.datastore
   cluster       = var.cluster
-  host_name     = var.esxi_host_name  # Direct host targeting - bypasses HA/DRS
-  networks      = var.networks        # Use multiple networks
+  networks      = var.networks        # Multiple network interfaces
   template_name = var.template_name
 
-  vm_name       = "basic-vm-02"
-  vm_folder     = ""
-  num_cpus      = 2        # Back to 2 CPUs now that HA is fixed
-  memory        = 4096     # Back to 4GB RAM
-  disk_size     = 30
+  # Cluster configuration
+  name_prefix = var.name_prefix
+  vm_count    = var.vm_count
+  vm_folder   = ""
   
-  # ESXi 8.0.3 compatible - use template's hardware version (21)
-  firmware         = "bios"
+  # Resource allocation per VM
+  num_cpus  = var.num_cpus
+  memory    = var.memory
+  disk_size = var.disk_size
   
-  # No cloud-init or customization - just clone from template
-  use_cloud_init = false
+  # Network configuration
+  use_dhcp             = var.use_dhcp
+  ipv4_network_prefix  = var.ipv4_network_prefix
+  ipv4_address_start   = var.ipv4_address_start
+  ipv4_gateway         = var.ipv4_gateway
+  dns_servers          = var.dns_servers
+  domain               = var.domain
   
-  # No network configuration - VM will use DHCP from template settings
-  # Removed: ipv4_address, ipv4_gateway, dns_servers, domain
-  
-  annotation    = "Basic Debian VM - cloned from template with multiple network interfaces"
+  annotation = "Managed by Terraform - 5 VM Cluster with Multiple Network Interfaces"
 }
 
-output "vm_ip" {
-  value = module.basic_vm.vm_ip_address
+# Output information about the created VMs
+output "vm_names" {
+  description = "Names of all created VMs"
+  value       = module.vm_cluster.vm_names
+}
+
+output "vm_ip_addresses" {
+  description = "IP addresses of all created VMs"
+  value       = module.vm_cluster.vm_ip_addresses
+}
+
+output "cluster_info" {
+  description = "Summary of the created cluster"
+  value = {
+    vm_count        = var.vm_count
+    name_prefix     = var.name_prefix
+    network_count   = length(var.networks)
+    networks        = [for net in var.networks : net.name]
+    resource_per_vm = {
+      cpus   = var.num_cpus
+      memory = "${var.memory}MB"
+      disk   = "${var.disk_size}GB"
+    }
+  }
 }

@@ -13,6 +13,10 @@ crash.*.log
 *.tfvars
 *.tfvars.json
 
+# But include example files
+!*.tfvars.example
+!examples/**/*.tfvars.example
+
 # Ignore override files as they are usually used to override resources locally
 override.tf
 override.tf.json
@@ -38,7 +42,7 @@ terraform.rc
 
 # Remove .github exclusion - we want to include .github/workflows for GitHub Actions
 # But exclude instructions directory (internal project context)
-.github
+.github/instructions/
 
 # Ignore SSH keys
 *.pem

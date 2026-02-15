@@ -10,6 +10,8 @@
 
 Named after Kaveh the Blacksmith (کاوه آهنگر), the legendary Persian craftsman who forged tools and led a revolution against tyranny.
 
+🎯 **NEW: Interactive VM Deployment with Dual Network Cards!**
+
 </div>
 
 ---
@@ -20,9 +22,10 @@ Kaveh is a comprehensive Terraform configuration for automating VMware vSphere v
 
 ### Features
 
-- ✨ **Production-Ready**: Secure variable management and state handling
-- 🔄 **Flexible Deployment**: Support for single or multiple VM deployments
-- 🛠️ **Customizable**: Template-based cloning with network customization
+- ✨ **Interactive Deployment**: Prompts for VM count and naming preferences
+- 🌐 **Dual Network Cards**: Every VM automatically gets 2 network interfaces
+- 🔄 **Scalable**: Deploy 1-50 VMs with a single command  
+- 🛠️ **Modular Design**: Reusable modules for different deployment scenarios
 - 📦 **Cloud-Init Support**: Modern initialization for Linux VMs
 - 🔐 **Secure**: Sensitive data handling with Terraform best practices
 - 🎯 **GitOps Ready**: Designed for CI/CD integration
